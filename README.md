@@ -7,4 +7,4 @@ Generative LLM powered by openAI.
 Frontend Next.js folder which uses this API to build a Timeline of a popular band or group.
 Leverages [Shadcn](https://ui.shadcn.com/).  
 
-Eventually, we want to include links to live performances and albumn information.  
+Eventually, we want to include links to live performances and album information.  
