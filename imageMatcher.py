@@ -35,7 +35,7 @@ async def imageMatcher(facts, images):
                 corresponding listed fact. The goal is to match a fact with an image so that a timeline can be built with images. 
                 You are using the context clues of the image alt_id and the filename to try and make an image match with a filename. 
 
-                NOTE: If the image and filename are not a likely match, leave the image unmatched and denoted with -1
+                NOTE: If the image and filename are not a match, leave the image unmatched and denoted with -1
                       It is very important to have images matchup properly to the fact provided.  If you are unsure, denote the image number as -1
 
                 Facts are initially in JSON, ordered, chronological format.
@@ -43,6 +43,7 @@ async def imageMatcher(facts, images):
 
                 The response should be a JSON object in the following format:
                 JSON and JSON ONLY!
+                IMAGE Numbers MUST NEVER BE Repeated. 
                 {{
                     "fact_image_pairs": [
                         {{"Fact": "1", "Image_Number": "The image number."}},
@@ -61,32 +62,69 @@ async def imageMatcher(facts, images):
     result = completion.choices[0].message.content 
     return result 
 
+async def condenserFinal(information_json, facts_string_json, to_match_as_dict):
+    final_list = []
+    pair_length = len(to_match_as_dict["fact_image_pairs"])
+    for idx in range(0, pair_length):
+        image_index = int(to_match_as_dict["fact_image_pairs"][idx]["Image_Number"])
 
-if __name__ == "__main__":
-    file_path = "en.wikipedia.org_detail.json"
-    artist_name = "The Beatles"
+        fact = facts_string_json["facts"][idx]
+        path = ""
+        if image_index != -1:
+            path = (information_json[image_index - 1]["image_path"])
+        pair = {
+            "date": fact["date"],
+            "fact": fact["fact"],
+            "path": path
+        }
+        final_list.append(pair)
+
+    json_output = json.dumps(final_list)
+    return json_output
+
+async def fact_imager(file_path, artist_name):    
+
+   
+    facts_string = await d.fact_producer(artist_name, "10")
+
+    images = await query_prep(file_path)
+    matching = await imageMatcher(facts_string, images)
     
-    # json_result_as_string = asyncio.run(d.fact_producer(artist_name, "10"))
+    with open(file_path, 'r') as file:
+        information = file.read()
+
+    information_json = json.loads(information)
+    facts_string_json = json.loads(facts_string)
+    to_match_as_dict = json.loads(matching)
+    return (await condenserFinal(information_json, facts_string_json, to_match_as_dict))
+
+    # return await condenserFinal(information_json, facts_string_json, to_match_as_dict)
+    # facts_string = asyncio.run(d.fact_producer(artist_name, "10"))
     # images_file_path = "facts.txt"
     # with open(images_file_path, 'w') as file:  
-    #     file.write(json_result_as_string)
+    #     file.write(facts_string)
 
     # images = asyncio.run(query_prep(file_path))
     # facts_file_path = "images.txt"
     # with open(facts_file_path, 'w') as file:
     #     file.write(images)
 
-    file_path = "facts.txt"
-    json_result_as_string = ""
-    with open(file_path, 'r') as file:
-        json_result_as_string = file.read()
+    # matching = asyncio.run(imageMatcher(facts_string, images))
+    # matches_file_path = "matches.json"
+    # with open(matches_file_path, 'w') as file:
+    #     file.write(matching)
+    
+    # with open(file_path, 'r') as file:
+    #     information = file.read()
 
-    file_path = "images.txt"
-    images = ""
-    with open(file_path, 'r') as file:
-        images = file.read()
+    # information_json, facts_string_json, to_match_as_dict = json.loads(information), json.loads(facts_string), json.loads(matching)
 
-    matching =  asyncio.run(imageMatcher(json_result_as_string, images))
-    matches_file_path = "matches.txt"
-    with open(matches_file_path, 'w') as file:
-        file.write(matching)
+#8 cents per query - we can reduce this for sure
+if __name__ == "__main__":
+    file_path = "en.wikipedia.org_detail.json"
+    artist_name = "The Beatles"
+    final_json = (fact_imager(file_path, artist_name))
+
+    output_path = "output.json"
+    with open(output_path, 'w') as file:
+        file.write(final_json)

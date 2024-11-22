@@ -1,0 +1,14 @@
+{
+    "fact_image_pairs": [
+        {"Fact": "1", "Image_Number": "1"},
+        {"Fact": "2", "Image_Number": "22"},
+        {"Fact": "3", "Image_Number": "6"},
+        {"Fact": "4", "Image_Number": "7"},
+        {"Fact": "5", "Image_Number": "13"},
+        {"Fact": "6", "Image_Number": "15"},
+        {"Fact": "7", "Image_Number": "16"},
+        {"Fact": "8", "Image_Number": "18"},
+        {"Fact": "9", "Image_Number": "-1"},
+        {"Fact": "10", "Image_Number": "19"}
+    ]
+}
